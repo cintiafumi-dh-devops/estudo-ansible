@@ -8,7 +8,7 @@
     owner: root
     group: root
     mode: 0755
-    app_name: app
+    app_name: app_node2-master
   tasks:
     - name: "1. Create folder"
       file:
@@ -22,7 +22,8 @@
       package:
         name: 
           - unzip
-          - pm2
+          - nodejs
+          - npm
         state: latest
       register: install_packages
 
@@ -34,14 +35,19 @@
       register: download_file
       when: install_packages is success
     
-
     - name: "4. Compile app"
       npm:
         name: "{{ app_name }}"
         path: "{{ path_app }}"
       when: download_file is success
 
-    # - name: "5. Install pm2 using npm"
+    - name: "5. Install pm2 using npm"
+      npm:
+        name: pm2
+        global: yes
+        state: present
+      register: install_pm2
 
     - name: "6. Run app"
       command: "pm2 start {{ path_app }}/{{ app_name }}/app.js"
+      when: install_pm2 is success
